@@ -1,6 +1,9 @@
+import java.util.LinkedList;
+import java.util.List;
 
 public class HashTableImpl<K, V> implements HashTable<K, V> {
 
+    private final List<Item<K, V>[]>[] list;
     private final Item<K, V>[] data;
     private int size;
     private Item<K, V> emptyItem;
@@ -45,6 +48,7 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
     }
 
     public HashTableImpl(int initialCapacity) {
+        this.list = new LinkedList[initialCapacity * 2];
         this.data = new Item[initialCapacity * 2];
         emptyItem = new Item<>(null, null);
     }
@@ -63,6 +67,7 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
         int index = hashFunc(key);
         int n = 0;
 
+        /*
         while (data[index] != null && data[index] != emptyItem) {
 
             if (isKeysEquals(data[index], key)) {
@@ -71,14 +76,23 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
             }
 
             index += getStepDoubleHash(key);
-            //index += getStepQuadratic(n++);
-            //index += getStepLinear();
+            index += getStepQuadratic(n++);
+            index += getStepLinear();
             index %= data.length;
 
         }
         data[index] = new Item<>(key, value);
         size++;
-
+         */
+        if (list[index] != null /*&& list[index] != emptyItem*/) {
+            if (isKeysEquals(list[index].get(0), key)) {
+                list[index].add(data);
+                data[index].setValue();
+            }
+        }
+        list[index] = new LinkedList<>();
+        list[index].add(data);
+        data[index] = new Item<>(key, value);
         return true;
     }
 
@@ -94,11 +108,14 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
         return 1;
     }
 
-    private boolean isKeysEquals(Item<K,V> item, K key) {
-        if(item == emptyItem) {
-            return false;
+    private boolean isKeysEquals(Item<K,V>[] item, K key) {
+        for (int i = 0; i < item.length; i++) {
+            if(item[i] == emptyItem) {
+                return false;
+            }
+            return (item[i].getKey() == null) ? (key == null) : item[i].getKey().equals(key);
         }
-        return (item.getKey() == null) ? (key == null) : item.getKey().equals(key);
+        return false;
     }
 
     private int hashFunc(K key) {
@@ -120,7 +137,7 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
             if (item == null) {
                 break;
             }
-            if (isKeysEquals(data[index], key)) {
+            if (isKeysEquals(list[index].get(index), key)) {
                 return index;
             }
 
