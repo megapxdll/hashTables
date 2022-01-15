@@ -1,20 +1,20 @@
 import java.util.LinkedList;
 
-public class HashTableImpl<K, V> implements HashTable<K, V> {
+public class ChainImpl<K, V> implements HashTable<K, V> {
 
-    //private final Item<K, V>[] data;
-    private final LinkedList<Item<K, V>>[] data;
-    private Item<K, V> item;
+    private final LinkedList<Object<K, V>>[] data;
+
+    private Object<K, V> emptyObject;
+
     private int size;
-    private Item<K, V> emptyItem;
 
-    static class Item<K, V> implements Entry<K, V> {
+    static class Object<K, V> implements Entry<K, V> {
 
         private final K key;
 
         private V value;
 
-        public Item(K key, V value) {
+        public Object(K key, V value) {
             this.key = key;
             this.value = value;
         }
@@ -31,7 +31,6 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
 
         @Override
         public void setValue() {
-
         }
 
         public void setValue(V value) {
@@ -40,19 +39,19 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
 
         @Override
         public String toString() {
-            return "Item{" +
+            return "Object{" +
                     "key=" + key +
                     ", value=" + value +
                     '}';
         }
     }
 
-    public HashTableImpl(int initialCapacity) {
+    public ChainImpl(int initialCapacity) {
         this.data = new LinkedList[initialCapacity * 2];
-        emptyItem = new Item<>(null, null);
+        emptyObject = new Object<>(null, null);
     }
 
-    public HashTableImpl() {
+    public ChainImpl() {
         this(16);
     }
 
@@ -65,51 +64,25 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
 
         int index = hashFunc(key);
         int n = 0;
-        data[index] = new LinkedList<>();
-        if (data[index] == null /*&& data[index].get(0) == emptyItem*/) {
-
-            if (isKeysEquals(data[index].get(0), key)) {
-                data[index].add(new Item<>(key, value));
-                return true;
-            }
+        if (data[index] == null) {
+            data[index] = new LinkedList<>();
         }
-        /*
-        while (data[index] != null && data[index].get(n++) != emptyItem) {
+        data[index].add(new Object<>(key, value));
 
-            if (isKeysEquals(data[index], key)) {
-                data[index].add(value);
-                return true;
-            }
-
-            //index += getStepDoubleHash(key);
-            //index += getStepQuadratic(n++);
-            //index += getStepLinear();
-            //index %= data.length;
-        }
-        data[index].add(new Item<>(key, value));
         size++;
-         */
         return true;
     }
 
-    private int getStepDoubleHash(K key) {
-        return 5 - (key.hashCode() % 5);
-    }
+    /*
 
-    private int getStepQuadratic(int n) {
-        return (int) Math.pow(n, 2);
-    }
-
-    private int getStepLinear() {
-        return 1;
-    }
-
-    private boolean isKeysEquals(Item<K, V> item, K key) {
+    private boolean isKeysEquals(Item<K,V> item, K key) {
         if(item == emptyItem) {
             return false;
         }
         return (item.getKey() == null) ? (key == null) : item.getKey().equals(key);
     }
+
+     */
 
     private int hashFunc(K key) {
         return Math.abs(key.hashCode() % data.length);
@@ -126,33 +99,18 @@ public class HashTableImpl<K, V> implements HashTable<K, V> {
 
         int count = 0;
         while (count++ < data.length) {
-            Item<K, V> item = data[index].get(0);
-            if (item == null) {
+            Object<K, V> object = data[index].get(0);
+            if (data[index].get(0) == null) {
                 break;
             }
-            if (isKeysEquals(data[index].get(0), key)) {
-                return index;
-            }
-
-            index += 1;
-            index %= data.length;
         }
+
         return -1;
     }
 
     @Override
     public V remove(K key) {
-        int index = indexOf(key);
-
-        if (index == -1 ) {
-            return null;
-        }
-
-        Item<K, V> removed = data[index].get(0);
-        //data[index].get(0) = emptyItem;
-
-        data[index].remove(0);
-        return removed.getValue();
+        return null;
     }
 
     @Override
